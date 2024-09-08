@@ -3,21 +3,21 @@
 #include <sstream>
 #include <stdexcept>
 
-Movie::Movie(int id, std::string name, std::string duration, std::string showStartDate, std::string showStopDate) 
+Movie::Movie(std::string id, std::string name, std::string duration, std::string showStartDate, std::string showStopDate) 
     : id(id), name(name), duration(duration), showStartDate(showStartDate), showStopDate(showStopDate) {}
 
-int Movie::getId() const { return id; }
-std::string Movie::getName() const { return name; }  // Thêm getter cho name
+std::string Movie::getId() const { return id; }
+std::string Movie::getName() const { return name; }
 std::string Movie::getDuration() const { return duration; }
 std::string Movie::getShowStartDate() const { return showStartDate; }
 std::string Movie::getShowStopDate() const { return showStopDate; }
 
 void Movie::save(const Movie& Movie) {
-    FileManager::appendLine("../DB/movies.txt", Movie.toString());
+    FileManager::appendLine("../DB/movies.dat", Movie.toString());
 } 
 
 void Movie::update(const Movie& movie) {
-    auto lines = FileManager::readLines("../DB/movies.txt");
+    auto lines = FileManager::readLines("../DB/movies.dat");
     for (auto& line : lines) {
         Movie m = Movie::fromString(line);
         if(m.getId() == movie.getId()) {
@@ -25,11 +25,23 @@ void Movie::update(const Movie& movie) {
             break;
         }
     }
-    FileManager::writeLines("../DB/movies.txt", lines);
+    FileManager::writeLines("../DB/movies.dat", lines);
 }
 
-Movie Movie::getbyId(int id) {
-    auto lines = FileManager::readLines("../DB/movies.txt");
+void Movie::remove(const std::string& id) {
+    auto lines = FileManager::readLines("../DB/movies.dat");
+    auto newLines = std::vector<std::string>();
+    for (const auto& line : lines) {
+        Movie m = Movie::fromString(line);
+        if (m.getId() != id) {
+            newLines.push_back(line);
+        }
+    }
+    FileManager::writeLines("../DB/movies.dat", newLines);
+}
+
+Movie Movie::getbyId(const std::string& id) {
+    auto lines = FileManager::readLines("../DB/movies.dat");
     for(const auto& line : lines) {
         Movie m = Movie::fromString(line);
         if(m.getId() == id) {
@@ -41,7 +53,7 @@ Movie Movie::getbyId(int id) {
 
 std::vector<Movie> Movie::getAll() {
     std::vector<Movie> movies;
-    auto lines = FileManager::readLines("../DB/movies.txt");
+    auto lines = FileManager::readLines("../DB/movies.dat");
     for(const auto& line : lines) {
         movies.push_back(Movie::fromString(line));
     }
@@ -49,7 +61,7 @@ std::vector<Movie> Movie::getAll() {
 }
 
 std::string Movie::toString() const {
-    return std::to_string(id) + "," + name + "," + duration + "," + showStartDate + "," + showStopDate;
+    return id + "," + name + "," + duration + "," + showStartDate + "," + showStopDate;
 }
 
 Movie Movie::fromString(const std::string& str) {
@@ -60,5 +72,5 @@ Movie Movie::fromString(const std::string& str) {
         tokens.push_back(token);
     }
     if(tokens.size() != 5) throw std::runtime_error("Invalid movie string");
-    return Movie(std::stoi(tokens[0]), tokens[1], tokens[2], tokens[3], tokens[4]);
+    return Movie(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4]);
 }

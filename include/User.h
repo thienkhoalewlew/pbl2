@@ -6,22 +6,23 @@ enum class UserRole { Admin, Normal };
 
 class User {
 private:
-    int id;
+    std::string id; 
     std::string username;
     std::string password;
     UserRole role;
 
 public:
-    User(int id, std::string username, std::string password, UserRole role);
+    User(std::string id, std::string username, std::string password, UserRole role);  
 
-    int getId() const;
+    std::string getId() const;  
     std::string getUsername() const;
     std::string getPassword() const;
     UserRole getRole() const;
 
     static void save(const User& user);
     static void update(const User& user);
-    static User getById(int id);
+    static void remove(const std::string& id);
+    static User getById(const std::string& id);  
     static User getByUsername(const std::string& username);
     static std::vector<User> getAll();
 

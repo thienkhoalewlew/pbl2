@@ -1,23 +1,23 @@
-#include "../include/Showtime.h"
+#include "../include/ShowTime.h"
 #include "../include/FileManager.h"
 #include <sstream>
 #include <stdexcept>
 
-ShowTime::ShowTime(int id, int movieId, int roomId, std::string showTime, std::string showDate)
+ShowTime::ShowTime(std::string id, std::string movieId, std::string roomId, std::string showTime, std::string showDate)
     : id(id), movieId(movieId), roomId(roomId), showTime(showTime), showDate(showDate) {}
 
-int ShowTime::getId() const { return id; }
-int ShowTime::getMovieId() const { return movieId; }
-int ShowTime::getRoomId() const { return roomId; }
+std::string ShowTime::getId() const { return id; }
+std::string ShowTime::getMovieId() const { return movieId; }
+std::string ShowTime::getRoomId() const { return roomId; }
 std::string ShowTime::getShowTime() const { return showTime; }
 std::string ShowTime::getShowDate() const { return showDate; }
 
 void ShowTime::save(const ShowTime& showtime) {
-    FileManager::appendLine("showtimes.txt", showtime.toString());
+    FileManager::appendLine("../DB/showtimes.dat", showtime.toString());
 }
 
 void ShowTime::update(const ShowTime& showtime) {
-    auto lines = FileManager::readLines("showtimes.txt");
+    auto lines = FileManager::readLines("../DB/showtimes.dat");
     for (auto& line : lines) {
         ShowTime s = ShowTime::fromString(line);
         if (s.getId() == showtime.getId()) {
@@ -25,11 +25,23 @@ void ShowTime::update(const ShowTime& showtime) {
             break;
         }
     }
-    FileManager::writeLines("../DB/showtimes.txt", lines);
+    FileManager::writeLines("../DB/showtimes.dat", lines);
 }
 
-ShowTime ShowTime::getById(int id) {
-    auto lines = FileManager::readLines("../DB/showtimes.txt");
+void ShowTime::remove(const std::string& id) {
+    auto lines = FileManager::readLines("../DB/showtimes.dat");
+    auto newLines = std::vector<std::string>();
+    for (const auto& line : lines) {
+        ShowTime s = ShowTime::fromString(line);
+        if (s.getId() != id) {
+            newLines.push_back(line);
+        }
+    }
+    FileManager::writeLines("../DB/showtimes.dat", newLines);
+}
+
+ShowTime ShowTime::getById(const std::string& id) {
+    auto lines = FileManager::readLines("../DB/showtimes.dat");
     for (const auto& line : lines) {
         ShowTime s = ShowTime::fromString(line);
         if (s.getId() == id) {
@@ -41,7 +53,7 @@ ShowTime ShowTime::getById(int id) {
 
 std::vector<ShowTime> ShowTime::getAll() {
     std::vector<ShowTime> showtimes;
-    auto lines = FileManager::readLines("../DB/showtimes.txt");
+    auto lines = FileManager::readLines("../DB/showtimes.dat");
     for (const auto& line : lines) {
         showtimes.push_back(ShowTime::fromString(line));
     }
@@ -49,7 +61,7 @@ std::vector<ShowTime> ShowTime::getAll() {
 }
 
 std::string ShowTime::toString() const {
-    return std::to_string(id) + "," + std::to_string(movieId) + "," + std::to_string(roomId) + "," + showTime + "," + showDate;
+    return id + "," + movieId + "," + roomId + "," + showTime + "," + showDate;
 }
 
 ShowTime ShowTime::fromString(const std::string& str) {
@@ -60,5 +72,5 @@ ShowTime ShowTime::fromString(const std::string& str) {
         tokens.push_back(token);
     }
     if (tokens.size() != 5) throw std::runtime_error("Invalid showtime string");
-    return ShowTime(std::stoi(tokens[0]), std::stoi(tokens[1]), std::stoi(tokens[2]), tokens[3], tokens[4]);
+    return ShowTime(tokens[0], tokens[1], tokens[2], tokens[3], tokens[4]);
 }

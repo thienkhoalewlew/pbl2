@@ -2,22 +2,25 @@
 #include <vector>
 #include <string>
 
-class Ticket{
+class Ticket {
     private:
-        int id;
-        int showTimeId;
-        int seatId;
+        std::string id;
+        std::string showTimeId;
+        std::vector<std::string> seatIds; 
+        double price;
 
     public:
-        Ticket(int id, int showTimeId, int seatId);
+        Ticket(const std::string& id, const std::string& showTimeId, const std::vector<std::string>& seatIds, double price);
 
-        int getId() const;
-        int getShowTimeId() const;
-        int getSeatId() const;
+        std::string getId() const;
+        std::string getShowTimeId() const;
+        std::vector<std::string> getSeatIds() const; 
+        double getPrice() const;
 
-        static void save(const Ticket& Ticket);
-        static void update(const Ticket& Ticket);
-        static Ticket getById(int id);
+        static void save(const Ticket& ticket);
+        static void update(const Ticket& ticket);
+        static Ticket getById(const std::string& id);
+        static void remove(const std::string& id);
         static std::vector<Ticket> getAll();
 
         std::string toString() const;

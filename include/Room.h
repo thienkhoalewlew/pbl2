@@ -2,20 +2,21 @@
 #include<vector>
 #include<string>
 
-class Room{
+class Room {
     private:
-        int id;
+        std::string id;  
         int capacity;
         
     public:
-        Room(int id, int capacity);
+        Room(std::string id, int capacity);  
 
-        int getId() const;
+        std::string getId() const; 
         int getCapacity() const;
 
         static void save(const Room& Room);
         static void update(const Room& room);
-        static Room getById(int id);
+        static void remove(const std::string& id);
+        static Room getById(const std::string& id); 
         static std::vector<Room> getAll();
 
         std::string toString() const;

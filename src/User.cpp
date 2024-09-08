@@ -3,20 +3,20 @@
 #include <sstream>
 #include <stdexcept>
 
-User::User(int id, std::string username, std::string password, UserRole role)
+User::User(std::string id, std::string username, std::string password, UserRole role)
     : id(id), username(username), password(password), role(role) {}
 
-int User::getId() const { return id; }
+std::string User::getId() const { return id; }
 std::string User::getUsername() const { return username; }
 std::string User::getPassword() const { return password; }
 UserRole User::getRole() const { return role; }
 
 void User::save(const User& user) {
-    FileManager::appendLine("../DB/users.txt", user.toString());
+    FileManager::appendLine("../DB/users.dat", user.toString());
 }
 
 void User::update(const User& user) {
-    auto lines = FileManager::readLines("../DB/users.txt");
+    auto lines = FileManager::readLines("../DB/users.dat");
     for (auto& line : lines) {
         User u = User::fromString(line);
         if (u.getId() == user.getId()) {
@@ -24,11 +24,23 @@ void User::update(const User& user) {
             break;
         }
     }
-    FileManager::writeLines("../DB/users.txt", lines);
+    FileManager::writeLines("../DB/users.dat", lines);
 }
 
-User User::getById(int id) {
-    auto lines = FileManager::readLines("../DB/users.txt");
+void User::remove(const std::string& id) {
+    auto lines = FileManager::readLines("../DB/users.dat");
+    auto newLines = std::vector<std::string>();
+    for (const auto& line : lines) {
+        User u = User::fromString(line);
+        if (u.getId() != id) {
+            newLines.push_back(line);
+        }
+    }
+    FileManager::writeLines("../DB/users.dat", newLines);
+}
+
+User User::getById(const std::string& id) {
+    auto lines = FileManager::readLines("../DB/users.dat");
     for (const auto& line : lines) {
         User u = User::fromString(line);
         if (u.getId() == id) {
@@ -39,7 +51,7 @@ User User::getById(int id) {
 }
 
 User User::getByUsername(const std::string& username) {
-    auto lines = FileManager::readLines("../DB/users.txt");
+    auto lines = FileManager::readLines("../DB/users.dat");
     for (const auto& line : lines) {
         User u = User::fromString(line);
         if (u.getUsername() == username) {
@@ -51,7 +63,7 @@ User User::getByUsername(const std::string& username) {
 
 std::vector<User> User::getAll() {
     std::vector<User> users;
-    auto lines = FileManager::readLines("users.txt");
+    auto lines = FileManager::readLines("../DB/users.dat");
     for (const auto& line : lines) {
         users.push_back(User::fromString(line));
     }
@@ -59,7 +71,7 @@ std::vector<User> User::getAll() {
 }
 
 std::string User::toString() const {
-    return std::to_string(id) + "," + username + "," + password + "," + (role == UserRole::Admin ? "admin" : "normal");
+    return id + "," + username + "," + password + "," + (role == UserRole::Admin ? "admin" : "normal");
 }
 
 User User::fromString(const std::string& str) {
@@ -71,5 +83,5 @@ User User::fromString(const std::string& str) {
     }
     if (tokens.size() != 4) throw std::runtime_error("Invalid user string");
     UserRole role = tokens[3] == "admin" ? UserRole::Admin : UserRole::Normal;
-    return User(std::stoi(tokens[0]), tokens[1], tokens[2], role);
+    return User(tokens[0], tokens[1], tokens[2], role);
 }

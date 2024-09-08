@@ -3,19 +3,20 @@
 #include <sstream>
 #include <stdexcept>
 
-Ticket::Ticket(int id, int showtimeId, int seatId)
-    : id(id), showTimeId(showtimeId), seatId(seatId) {}
+Ticket::Ticket(const std::string& id, const std::string& showTimeId, const std::vector<std::string>& seatIds, double price)
+    : id(id), showTimeId(showTimeId), seatIds(seatIds), price(price) {}
 
-int Ticket::getId() const { return id; }
-int Ticket::getShowTimeId() const { return showTimeId; }
-int Ticket::getSeatId() const { return seatId; }
+std::string Ticket::getId() const { return id; }
+std::string Ticket::getShowTimeId() const { return showTimeId; }
+std::vector<std::string> Ticket::getSeatIds() const { return seatIds; }
+double Ticket::getPrice() const { return price; }
 
 void Ticket::save(const Ticket& ticket) {
-    FileManager::appendLine("../DB/tickets.txt", ticket.toString());
+    FileManager::appendLine("../DB/tickets.dat", ticket.toString());
 }
 
 void Ticket::update(const Ticket& ticket) {
-    auto lines = FileManager::readLines("../DB/tickets.txt");
+    auto lines = FileManager::readLines("../DB/tickets.dat");
     for (auto& line : lines) {
         Ticket t = Ticket::fromString(line);
         if (t.getId() == ticket.getId()) {
@@ -23,11 +24,23 @@ void Ticket::update(const Ticket& ticket) {
             break;
         }
     }
-    FileManager::writeLines("../Db/tickets.txt", lines);
+    FileManager::writeLines("../DB/tickets.dat", lines);
 }
 
-Ticket Ticket::getById(int id) {
-    auto lines = FileManager::readLines("../DB/tickets.txt");
+void Ticket::remove(const std::string& id) {
+    auto lines = FileManager::readLines("../DB/tickets.dat");
+    auto newLines = std::vector<std::string>();
+    for (const auto& line : lines) {
+        Ticket t = Ticket::fromString(line);
+        if (t.getId() != id) {
+            newLines.push_back(line);
+        }
+    }
+    FileManager::writeLines("../DB/tickets.dat", newLines);
+}
+
+Ticket Ticket::getById(const std::string& id) {
+    auto lines = FileManager::readLines("../DB/tickets.dat");
     for (const auto& line : lines) {
         Ticket t = Ticket::fromString(line);
         if (t.getId() == id) {
@@ -39,7 +52,7 @@ Ticket Ticket::getById(int id) {
 
 std::vector<Ticket> Ticket::getAll() {
     std::vector<Ticket> tickets;
-    auto lines = FileManager::readLines("../DB/tickets.txt");
+    auto lines = FileManager::readLines("../DB/tickets.dat");
     for (const auto& line : lines) {
         tickets.push_back(Ticket::fromString(line));
     }
@@ -47,7 +60,12 @@ std::vector<Ticket> Ticket::getAll() {
 }
 
 std::string Ticket::toString() const {
-    return std::to_string(id) + "," + std::to_string(showTimeId) + "," + std::to_string(seatId);
+    std::ostringstream oss;
+    oss << id << "," << showTimeId << "," << price;
+    for (const auto& seatId : seatIds) {
+        oss << "," << seatId;
+    }
+    return oss.str();
 }
 
 Ticket Ticket::fromString(const std::string& str) {
@@ -57,6 +75,9 @@ Ticket Ticket::fromString(const std::string& str) {
     while (std::getline(iss, token, ',')) {
         tokens.push_back(token);
     }
-    if (tokens.size() != 3) throw std::runtime_error("Invalid ticket string");
-    return Ticket(std::stoi(tokens[0]), std::stoi(tokens[1]), std::stoi(tokens[2]));
+    if (tokens.size() < 4) throw std::runtime_error("Invalid ticket string");
+    
+    double price = std::stod(tokens[2]);
+    std::vector<std::string> seatIds(tokens.begin() + 3, tokens.end());
+    return Ticket(tokens[0], tokens[1], seatIds, price);
 }
