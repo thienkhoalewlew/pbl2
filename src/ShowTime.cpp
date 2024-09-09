@@ -12,6 +12,18 @@ std::string ShowTime::getRoomId() const { return roomId; }
 std::string ShowTime::getShowTime() const { return showTime; }
 std::string ShowTime::getShowDate() const { return showDate; }
 
+std::vector<ShowTime> ShowTime::getByMovieId(const std::string& movieId) {
+    std::vector<ShowTime> matchingShowTimes;
+    auto lines = FileManager::readLines("../DB/showtimes.dat");
+    for (const auto& line : lines) {
+        ShowTime s = ShowTime::fromString(line);
+        if (s.getMovieId() == movieId) {
+            matchingShowTimes.push_back(s);
+        }
+    }
+    return matchingShowTimes;
+}
+
 void ShowTime::save(const ShowTime& showtime) {
     FileManager::appendLine("../DB/showtimes.dat", showtime.toString());
 }

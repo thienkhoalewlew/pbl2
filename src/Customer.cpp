@@ -48,18 +48,28 @@ void customerFunctionality(const std::string& currentDate) {
 }
 
 void loadMovieAvailable(const std::string& currentDate) {
-    std::vector<Movie> movies = Movie::getAll();
+    std::vector<ShowTime> showtimes = ShowTime::getAll();
+    std::vector<std::string> availableMovieIds;
     bool found = false;
     
     std::cout << "Available movies for " << currentDate << ":\n";
     
-    for (const auto& movie : movies) {
-        if (isDateInRange(currentDate, movie.getShowStartDate(), movie.getShowStopDate())) {
-            std::cout << "- Movie ID: " << movie.getId() << "\n";
-            std::cout << "  Name: " << movie.getName() << "\n";
-            std::cout << "  Duration: " << movie.getDuration() << "\n";
-            std::cout << "  Show period: " << movie.getShowStartDate() << " to " << movie.getShowStopDate() << "\n\n";
-            found = true;
+    for (const auto& showtime : showtimes) {
+        if (showtime.getShowDate() == currentDate) {
+            std::string movieId = showtime.getMovieId();
+            if (std::find(availableMovieIds.begin(), availableMovieIds.end(), movieId) == availableMovieIds.end()) {
+                availableMovieIds.push_back(movieId);
+                try {
+                    Movie movie = Movie::getbyId(movieId);
+                    std::cout << "- Movie ID: " << movie.getId() << "\n";
+                    std::cout << "  Name: " << movie.getName() << "\n";
+                    std::cout << "  Duration: " << movie.getDuration() << " minutes\n";
+                    std::cout << "  Show date: " << currentDate << "\n\n";
+                    found = true;
+                } catch (const std::exception& e) {
+                    std::cerr << "Error: " << e.what() << "\n";
+                }
+            }
         }
     }
     

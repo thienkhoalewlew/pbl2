@@ -11,6 +11,18 @@ std::string Ticket::getShowTimeId() const { return showTimeId; }
 std::vector<std::string> Ticket::getSeatIds() const { return seatIds; }
 double Ticket::getPrice() const { return price; }
 
+std::vector<Ticket> Ticket::getByShowTimeId(const std::string& showTimeId) {
+    std::vector<Ticket> tickets;
+    auto lines = FileManager::readLines("../DB/tickets.dat");
+    for (const auto& line : lines) {
+        Ticket t = Ticket::fromString(line);
+        if (t.getShowTimeId() == showTimeId) {
+            tickets.push_back(t);
+        }
+    }
+    return tickets;
+}
+
 void Ticket::save(const Ticket& ticket) {
     FileManager::appendLine("../DB/tickets.dat", ticket.toString());
 }

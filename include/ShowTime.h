@@ -18,6 +18,7 @@ class ShowTime {
         std::string getRoomId() const;
         std::string getShowTime() const;
         std::string getShowDate() const;
+        static std::vector<ShowTime> getByMovieId(const std::string& movieId);
 
         static void save(const ShowTime& ShowTime);
         static void update(const ShowTime& ShowTime);

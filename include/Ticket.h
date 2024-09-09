@@ -16,6 +16,7 @@ class Ticket {
         std::string getShowTimeId() const;
         std::vector<std::string> getSeatIds() const; 
         double getPrice() const;
+        static std::vector<Ticket> getByShowTimeId(const std::string& showTimeId);
 
         static void save(const Ticket& ticket);
         static void update(const Ticket& ticket);
