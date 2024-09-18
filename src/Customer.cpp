@@ -13,26 +13,60 @@
 
 bool isDateInRange(const std::string& date, const std::string& startDate, const std::string& stopDate);
 void loadMovieAvailable(const std::string& currentDate);
-void loadShowtimesForMovie(const std::string& movieId);
+void loadShowtimesForMovie(const std::string& movieId, const std::string& currentDate);
 void loadSeatForShowtime(const std::string& showtimeId);
 void printTicket(const std::string& movieId, const std::string& showtimeId, const std::vector<std::string>& seatIds);
 
 void customerFunctionality(const std::string& currentDate) {
+    std::cout << "\033[32m";
     std::cout << "Welcome to the movie booking system!\n";
+    std::cout << "\033[0m";
     loadMovieAvailable(currentDate);
 
     std::string movieId;
-    std::cout << "Enter Movie ID to continue: ";
-    std::cin >> movieId;
-    loadShowtimesForMovie(movieId);
+    while (true) {
+        std::cout << "\033[33m";
+        std::cout << "Enter Movie ID to continue: ";
+        std::cout << "\033[0m";
+        std::cin >> movieId;
+        try {
+            Movie movie = Movie::getbyId(movieId);
+            if (movie.getId() == movieId) {
+                loadShowtimesForMovie(movieId, currentDate);
+                break; // Exit the loop if movie ID is found
+            }
+        } catch (const std::exception& e) {
+            std::cout << "\033[31m";
+            std::cerr << "Movie ID not found. Please try again.\n";
+            std::cout << "\033[0m";
+        }
+    }
 
     std::string showtimeId;
+    std::cout << "\033[33m";
     std::cout << "Enter Showtime ID to continue: ";
+    std::cout << "\033[0m";
     std::cin >> showtimeId;
-    loadSeatForShowtime(showtimeId);
+    while (true) {
+        try {
+            ShowTime showtime = ShowTime::getById(showtimeId);
+            if (showtime.getId() == showtimeId) {
+                loadSeatForShowtime(showtimeId);
+                break; // Exit the loop if showtime ID is found
+            }
+        } catch (const std::exception& e) {
+            std::cout << "\033[31m";
+            std::cerr << "Showtime ID not found. Please try again.\n";
+            std::cout << "\033[0m";
+            std::cout << "Enter Showtime ID to continue: ";
+            std::cin >> showtimeId;
+        }
+    }
 
     std::string seatInput;
+    std::cout << "\033[33m";
     std::cout << "Enter Seat IDs to book (separated by commas): ";
+    std::cout << "\033[0m";
     std::cin.ignore();  // Ignore leftover newline character
     std::getline(std::cin, seatInput);
 
@@ -51,8 +85,9 @@ void loadMovieAvailable(const std::string& currentDate) {
     std::vector<ShowTime> showtimes = ShowTime::getAll();
     std::vector<std::string> availableMovieIds;
     bool found = false;
-    
+    std::cout << "\033[32m";
     std::cout << "Available movies for " << currentDate << ":\n";
+    std::cout << "\033[0m";
     
     for (const auto& showtime : showtimes) {
         if (showtime.getShowDate() == currentDate) {
@@ -61,20 +96,26 @@ void loadMovieAvailable(const std::string& currentDate) {
                 availableMovieIds.push_back(movieId);
                 try {
                     Movie movie = Movie::getbyId(movieId);
+                    std::cout << "\033[34m";
                     std::cout << "- Movie ID: " << movie.getId() << "\n";
                     std::cout << "  Name: " << movie.getName() << "\n";
                     std::cout << "  Duration: " << movie.getDuration() << " minutes\n";
                     std::cout << "  Show date: " << currentDate << "\n\n";
+                    std::cout << "\033[0m";
                     found = true;
                 } catch (const std::exception& e) {
+                    std::cout << "\033[31m";
                     std::cerr << "Error: " << e.what() << "\n";
+                    std::cout << "\033[0m";
                 }
             }
         }
     }
     
     if (!found) {
+        std::cout << "\033[31m";
         std::cout << "No movies available for today.\n";
+        std::cout << "\033[0m"; 
     }
 }
 
@@ -82,31 +123,44 @@ bool isDateInRange(const std::string& date, const std::string& startDate, const 
     return date >= startDate && date <= stopDate;
 }
 
-void loadShowtimesForMovie(const std::string& movieId) {
+void loadShowtimesForMovie(const std::string& movieId, const std::string& currentDate) {
     try {
         Movie movie = Movie::getbyId(movieId);
         std::string movieName = movie.getName();
 
         std::vector<ShowTime> showtimes = ShowTime::getAll();
+        std::vector<ShowTime> filteredShowtimes;
         bool found = false;
 
-        std::cout << "Showtimes for \"" << movieName << "\":\n";
-
         for (const auto& showtime : showtimes) {
-            if (showtime.getMovieId() == movieId) {
-                std::cout << "- Showtime ID: " << showtime.getId() << "\n";
-                std::cout << "  Show Time: " << showtime.getShowTime() << "\n";
-                std::cout << "  Show Date: " << showtime.getShowDate() << "\n";
-                std::cout << "  Room ID: " << showtime.getRoomId() << "\n\n";
-                found = true;
+            if (showtime.getMovieId() == movieId && showtime.getShowDate() == currentDate) {
+                filteredShowtimes.push_back(showtime);
             }
         }
+        std::cout << "\033[33m"; 
+        std::cout << "Showtimes today for \"" << movieName << "\":\n";
+        std::cout << "\033[0m"; 
 
+        std::cout << "\033[34m"; 
+        for (const auto& showtime : filteredShowtimes) {
+
+            std::cout << "- Showtime ID: " << showtime.getId() << "\n";
+            std::cout << "  Show Time: " << showtime.getShowTime() << "\n";
+            std::cout << "  Show Date: " << showtime.getShowDate() << "\n";
+            std::cout << "  Room ID: " << showtime.getRoomId() << "\n\n";
+            found = true;
+        }
+        std::cout << "\033[0m"; 
         if (!found) {
+            std::cout << "\033[31m";
             std::cout << "No showtimes available for this movie.\n";
+            std::cout << "\033[0m";
         }
     } catch (const std::exception& e) {
+        std::cout << "\033[31m";
         std::cerr << "Error: " << e.what() << "\n";
+        std::cout << "Movie ID not found. Please enter a valid movie ID.\n";
+        std::cout << "\033[0m";
     }
 }
 
@@ -139,21 +193,29 @@ void loadSeatForShowtime(const std::string& showtimeId) {
         }
 
         // Display available seats
+        std::cout << "\033[33m"; 
         std::cout << "Available seats for showtime " << showtimeId << " in room " << roomId << ":\n";
+        std::cout << "\033[0m"; 
         bool found = false;
+        std::cout << "\033[34m";
         for (const auto& seat : allSeats) {
             if (std::find(bookedSeats.begin(), bookedSeats.end(), seat) == bookedSeats.end()) {
                 std::cout << seat << " ";
                 found = true;
             }
         }
+        std::cout << "\033[0m"; 
         if (!found) {
+            std::cout << "\033[31m";
             std::cout << "No available seats.\n";
+            std::cout << "\033[0m";
         } else {
             std::cout << "\n";
         }
     } catch (const std::exception& e) {
+        std::cout << "\033[31m";
         std::cerr << "Error: " << e.what() << "\n";
+        std::cout << "\033[0m";
     }
 }
 
@@ -180,6 +242,7 @@ void printTicket(const std::string& movieId, const std::string& showtimeId, cons
         }
 
         // Print ticket details
+        std::cout << "\033[34m"; 
         std::cout << "Ticket Information:\n";
         std::cout << "Movie Name: " << movieName << "\n";
         std::cout << "Room ID: " << roomId << "\n";
@@ -191,10 +254,15 @@ void printTicket(const std::string& movieId, const std::string& showtimeId, cons
         }
         std::cout << "\n";
         std::cout << "Total Price: " << price << "\n";
+        std::cout << "\033[0m"; 
 
         // Confirm ticket booking
         char confirmation;
+        std::cout << "\033[31m";
+
+        std::cout << "\033[33m";
         std::cout << "Please confirm your ticket booking (y/n): ";
+        std::cout << "\033[0m";
         std::cin >> confirmation;
 
         if (confirmation == 'y' || confirmation == 'Y') {
@@ -205,12 +273,18 @@ void printTicket(const std::string& movieId, const std::string& showtimeId, cons
             Ticket ticket(ticketId, showtimeId, seatIds, price);
             Ticket::save(ticket);
 
+            std::cout << "\033[33m"; 
             std::cout << "Your ticket has been successfully booked!\n";
             std::cout << "Ticket ID: " << ticketId << "\n";
+            std::cout << "\033[0m"; 
         } else {
+            std::cout << "\031[0m"; 
             std::cout << "Ticket booking cancelled.\n";
+            std::cout << "\033[0m"; 
         }
     } catch (const std::exception& e) {
+        std::cout << "\033[31m";
         std::cerr << "Error: " << e.what() << "\n";
+        std::cout << "\033[0m";
     }
 }
