@@ -1,0 +1,17 @@
+# Program Execution Guide
+
+## Compilation
+
+To compile the program, use the following command:
+
+```bash
+g++ -I../include Main.cpp Admin.cpp LoginForm.cpp Customer.cpp Movie.cpp User.cpp ShowTime.cpp Room.cpp Ticket.cpp FileManager.cpp -o program
+```
+
+## Running the Program
+
+After successful compilation, you can run the program using the command:
+
+```bash
+./program.exe
+```
