@@ -35,7 +35,6 @@ void addUser();
 void editUser();
 void deleteUser();
 
-// Function to set cursor position
 void setCursorPosition(int x, int y) {
     COORD coord;
     coord.X = x;
@@ -70,16 +69,16 @@ void adminFunctionality() {
             }
         }
 
-        key = _getch();  // Get user input without pressing Enter
+        key = _getch();
 
         switch (key) {
-            case 72:  // Up arrow
+            case 72:  
                 selectedOption = (selectedOption - 1 + NUM_OPTIONS) % NUM_OPTIONS;
                 break;
-            case 80:  // Down arrow
+            case 80: 
                 selectedOption = (selectedOption + 1) % NUM_OPTIONS;
                 break;
-            case 13:  // Enter key
+            case 13:  
                 switch (selectedOption) {
                     case 0: manageMovies(); break;
                     case 1: manageRooms(); break;
@@ -87,7 +86,7 @@ void adminFunctionality() {
                     case 3: manageTickets(); break;
                     case 4: manageUsers(); break;
                     case 5: revenue(); break;
-                    case 6: return;  // Logout
+                    case 6: return; 
                 }
                 break;
         }
@@ -458,6 +457,9 @@ void revenue() {
         std::cout << movie.getId() << " | " << movie.getName() << " | " << std::fixed << std::setprecision(0) << "\033[31m"<< totalRevenue << "\033[34m"<< " VND\n";
     }
     std::cout << "\033[0m";
+    std::cin.ignore();
+    std::cin.get();
+    
 }
 
 void addNewMovie() {

@@ -23,31 +23,49 @@ std::string getCurrentDate();
 void showTicket();
 
 void customerFunctionality() {
-    int option;
-    do {
-        std::cout << "1. Booking" << std::endl << "2. View ticket information" << std::endl << "0. Logout" << std::endl;
-        std::cout << "\033[33m";
-        std::cout << "Enter option you want: ";
-        std::cout << "\033[0m";
-        std::cin >> option;
-        std::string currentDate;
+    const int NUM_OPTIONS = 3;
+    const std::string options[NUM_OPTIONS] = {
+        "Booking",
+        "View ticket information",
+        "Logout"
+    };
+    int selectedOption = 0;
+    int key;
 
-        switch(option) {
-            case 1:
-                currentDate = getCurrentDate();
-                customerBook(currentDate);
-                break;
-            case 2:
-                showTicket();
-                break;
-            case 0: 
-                break;           
-            default:
-                std::cout << "\033[31m";
-                std::cout << "Option you choose does not exist!" << std::endl;
-                std::cout << "\033[0m";
+    while (true) {
+        system("cls"); 
+
+        std::cout << "\033[33mCustomer Menu:\n\n\033[0m";
+
+        for (int i = 0; i < NUM_OPTIONS; ++i) {
+            if (i == selectedOption) {
+                std::cout << "\033[44m> " << options[i] << "\033[0m\n";
+            } else {
+                std::cout << "  " << options[i] << "\n";
+            }
         }
-    } while (option != 0);
+
+        key = _getch(); 
+
+        switch (key) {
+            case 72:  
+                selectedOption = (selectedOption - 1 + NUM_OPTIONS) % NUM_OPTIONS;
+                break;
+            case 80:  
+                selectedOption = (selectedOption + 1) % NUM_OPTIONS;
+                break;
+            case 13:  
+                if (selectedOption == 0) {
+                    std::string currentDate = getCurrentDate();
+                    customerBook(currentDate);
+                } else if (selectedOption == 1) {
+                    showTicket();
+                } else if (selectedOption == 2) {
+                    return;  
+                }
+                break;
+        }
+    }
 }
 
 void showTicket() {
@@ -57,25 +75,29 @@ void showTicket() {
     std::cout << "\033[0m";
     std::cin >> id;
     try {
-    std::cout << "\033[34m";
-    Ticket ticketToShow = Ticket::getById(id);
-    std::string showtimeId = ticketToShow.getShowTimeId();
-    ShowTime showtimeToShow = ShowTime::getById(showtimeId);
-    std::string movieId = showtimeToShow.getMovieId();
-    Movie movieToShow = Movie::getbyId(movieId);
-    std::cout << std::endl << "Name movie: " << movieToShow.getName() << std::endl;
-    std::cout << "Time: " << showtimeToShow.getShowTime() << std::endl;
-    std::cout << "Date: " << showtimeToShow.getShowDate() << std::endl;
-    std::vector<std::string> seatToShow = ticketToShow.getSeatIds();
-    std::cout << "Seats: ";
-    for (auto x: seatToShow) std::cout << x << " ";
-    std::cout << std::endl << std::endl;
-    std::cout << "\033[0m";
+        std::cout << "\033[34m";
+        Ticket ticketToShow = Ticket::getById(id);
+        std::string showtimeId = ticketToShow.getShowTimeId();
+        ShowTime showtimeToShow = ShowTime::getById(showtimeId);
+        std::string movieId = showtimeToShow.getMovieId();
+        Movie movieToShow = Movie::getbyId(movieId);
+        std::cout << std::endl << "Name movie: " << movieToShow.getName() << std::endl;
+        std::cout << "Time: " << showtimeToShow.getShowTime() << std::endl;
+        std::cout << "Date: " << showtimeToShow.getShowDate() << std::endl;
+        std::cout << "Room: " << showtimeToShow.getRoomId() << std::endl;
+        std::vector<std::string> seatToShow = ticketToShow.getSeatIds();
+        std::cout << "Seats: ";
+        for (auto x: seatToShow) std::cout << x << " ";
+
+        std::cout << "\033[0m";
+        std::cout << std::endl << std::endl;
     } catch (const std::exception& e) {
         std::cout << "\033[31m";
         std::cerr << "Error showing ticket: " << e.what() << std::endl;
         std::cout << "\033[0m";
     }
+    std::cin.ignore();
+    std::cin.get();
 }
 
 std::string getCurrentDate() {
@@ -131,33 +153,33 @@ std::string loadMovieAvailable(const std::string& currentDate) {
     int key;
 
     while (true) {
-        system("cls");  // Clear the console
+        system("cls"); 
         std::cout << "\033[32mAvailable movies for " << currentDate << ":\033[0m\n\n";
 
         for (size_t i = 0; i < availableMovies.size(); ++i) {
             if (i == selectedIndex) {
-                std::cout << "\033[44m";  // Blue background for selected movie
+                std::cout << "\033[44m"; 
             }
             std::cout << "- Movie ID: " << availableMovies[i].getId() << "\n";
             std::cout << "  Name: " << availableMovies[i].getName() << "\n";
             std::cout << "  Duration: " << availableMovies[i].getDuration() << " minutes\n";
             std::cout << "  Show date: " << currentDate << "\n\n";
             if (i == selectedIndex) {
-                std::cout << "\033[0m";  // Reset color
+                std::cout << "\033[0m"; 
             }
         }
 
         std::cout << "\033[33mUse arrow keys to navigate, Enter to select.\033[0m\n";
 
-        key = _getch();  // Get user input without pressing Enter
+        key = _getch();
         switch (key) {
-            case 72:  // Up arrow
+            case 72:  
                 selectedIndex = (selectedIndex - 1 + availableMovies.size()) % availableMovies.size();
                 break;
-            case 80:  // Down arrow
+            case 80:  
                 selectedIndex = (selectedIndex + 1) % availableMovies.size();
                 break;
-            case 13:  // Enter key
+            case 13:  
                 return availableMovies[selectedIndex].getId();
         }
     }
@@ -212,15 +234,15 @@ std::string loadShowtimesForMovie(const std::string& movieId, const std::string&
                     std::cout << "   Room ID: " << filteredShowtimes[i].getRoomId() << "\n\n";
                 }
             }
-            key = _getch();  // Get user input without pressing Enter
+            key = _getch();
             switch (key) {
-                case 72:  // Up arrow
+                case 72:
                     selectedOption = (selectedOption - 1 + filteredShowtimes.size()) % filteredShowtimes.size();
                     break;
-                case 80:  // Down arrow
+                case 80: 
                     selectedOption = (selectedOption + 1) % filteredShowtimes.size();
                     break;
-                case 13:  // Enter key
+                case 13:  
                     const auto& selectedShowtime = filteredShowtimes[selectedOption];
                     std::cout << "\033[32m";
                     std::cout << "You have selected showtime ID: " << selectedShowtime.getId() << "\n";
@@ -239,23 +261,18 @@ std::string loadShowtimesForMovie(const std::string& movieId, const std::string&
 
 std::string loadSeatForShowtime(const std::string& showtimeId) {
     try {
-        // Get the showtime to find the associated room
         ShowTime showtime = ShowTime::getById(showtimeId);
         std::string roomId = showtime.getRoomId();
 
-        // Get the room and its capacity
         Room room = Room::getById(roomId);
         int capacity = room.getCapacity();
 
-        // Create a list of all possible seats
         std::vector<std::string> allSeats;
         for (int i = 1; i <= capacity; ++i) {
             std::ostringstream seatId;
             seatId << roomId << std::setw(2) << std::setfill('0') << i; 
             allSeats.push_back(seatId.str());
         }
-
-        // Get all tickets to filter out booked seats
         std::vector<Ticket> tickets = Ticket::getAll();
         std::vector<std::string> bookedSeats;
         for (const auto& ticket : tickets) {
@@ -275,17 +292,17 @@ std::string loadSeatForShowtime(const std::string& showtimeId) {
             std::cout << "\033[0m"; 
             for (size_t i = 0; i < allSeats.size(); ++i) {
                 if (i == currentSeat) {
-                    std::cout << "\033[44m"; // Highlight current seat with blue background
+                    std::cout << "\033[44m";
                 }
                 if (std::find(selectedSeats.begin(), selectedSeats.end(), i) != selectedSeats.end()) {
-                    std::cout << "\033[42m" << allSeats[i] << " \033[0m"; // Green background for selected seats
+                    std::cout << "\033[42m" << allSeats[i] << " \033[0m";
                 } else if (std::find(bookedSeats.begin(), bookedSeats.end(), allSeats[i]) != bookedSeats.end()) {
-                    std::cout << "\033[41m" << allSeats[i] << " \033[0m"; // Dark background for booked seats
+                    std::cout << "\033[41m" << allSeats[i] << " \033[0m"; 
                 } else {
                     std::cout << allSeats[i] << " ";
                 }
                 if (i == currentSeat) {
-                    std::cout << "\033[0m"; // Reset color after current seat
+                    std::cout << "\033[0m"; 
                 }
             }
             std::cout << "\n";
@@ -294,28 +311,26 @@ std::string loadSeatForShowtime(const std::string& showtimeId) {
             std::cout << "Use arrow keys to navigate. Press Space to select/deselect. Press Enter when done.\n";
             std::cout << "\033[0m";
             
-            key = _getch();  // Get user input without pressing Enter
+            key = _getch();  
             switch (key) {
-                case 75:  // Left arrow
+                case 75: 
                     do {
                         currentSeat = (currentSeat - 1 + allSeats.size()) % allSeats.size();
                     } while (std::find(bookedSeats.begin(), bookedSeats.end(), allSeats[currentSeat]) != bookedSeats.end());
                     break;
-                case 77:  // Right arrow
+                case 77: 
                     do {
                         currentSeat = (currentSeat + 1) % allSeats.size();
                     } while (std::find(bookedSeats.begin(), bookedSeats.end(), allSeats[currentSeat]) != bookedSeats.end());
                     break;
-                case 32:  // Space bar
+                case 32:  
                     if (std::find(selectedSeats.begin(), selectedSeats.end(), currentSeat) != selectedSeats.end()) {
-                        // Deselect the seat
                         selectedSeats.erase(std::remove(selectedSeats.begin(), selectedSeats.end(), currentSeat), selectedSeats.end());
                     } else {
-                        // Select the seat
                         selectedSeats.push_back(currentSeat);
                     }
                     break;
-                case 13:  // Enter key
+                case 13: 
                     if (!selectedSeats.empty()) {
                         std::vector<std::string> selectedSeatIds;
                         for (int seat : selectedSeats) {
@@ -359,17 +374,14 @@ std::string loadSeatForShowtime(const std::string& showtimeId) {
 
 void printTicket(const std::string& movieId, const std::string& showtimeId, const std::vector<std::string>& seatIds) {
     try {
-        // Retrieve movie details
         Movie movie = Movie::getbyId(movieId);
         std::string movieName = movie.getName();
 
-        // Retrieve showtime details
         ShowTime showtime = ShowTime::getById(showtimeId);
         std::string roomId = showtime.getRoomId();
         std::string showDate = showtime.getShowDate();
         std::string showTime = showtime.getShowTime();
 
-        // Calculate ticket price based on seat type
         double price = 0.0;
         for (const auto& seat : seatIds) {
             if (seat.find("VIP") == 0) {
