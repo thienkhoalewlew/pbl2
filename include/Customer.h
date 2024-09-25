@@ -4,6 +4,6 @@
 #include <string>
 #include <vector>
 
-void customerFunctionality(const std::string& currentDate);
+void customerFunctionality();
 
 #endif // CUSTOMER_H

@@ -10,8 +10,6 @@
 #include <sstream>
 #include <algorithm>
 
-std::string getCurrentDate();   
-
 int main() {
     std::string username, password;
     std::cout << "Enter username: ";
@@ -25,8 +23,7 @@ int main() {
         adminFunctionality();
         return 0;
     } else if (role == "Normal User") {
-        std::string currentDate = getCurrentDate();
-        customerFunctionality(currentDate);
+        customerFunctionality();
 
     } else {
         std::cout << "Login failed. Please try again." << std::endl;
@@ -35,10 +32,4 @@ int main() {
     return 0;
 }
 
-std::string getCurrentDate() {
-    auto t = std::time(nullptr);
-    auto tm = *std::localtime(&t);
-    std::ostringstream oss;
-    oss << std::put_time(&tm, "%Y-%m-%d");
-    return oss.str();
-}
+

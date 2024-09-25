@@ -18,8 +18,75 @@ std::string loadMovieAvailable(const std::string& currentDate);
 std::string loadShowtimesForMovie(const std::string& movieId, const std::string& currentDate);
 std::string loadSeatForShowtime(const std::string& showtimeId);
 void printTicket(const std::string& movieId, const std::string& showtimeId, const std::vector<std::string>& seatIds);
+void customerBook(const std::string& currentDate);
+std::string getCurrentDate();
+void showTicket();
 
-void customerFunctionality(const std::string& currentDate) {
+void customerFunctionality() {
+    int option;
+    do {
+        std::cout << "1. Booking" << std::endl << "2. View ticket information" << std::endl << "0. Logout" << std::endl;
+        std::cout << "\033[33m";
+        std::cout << "Enter option you want: ";
+        std::cout << "\033[0m";
+        std::cin >> option;
+        std::string currentDate;
+
+        switch(option) {
+            case 1:
+                currentDate = getCurrentDate();
+                customerBook(currentDate);
+                break;
+            case 2:
+                showTicket();
+                break;
+            case 0: 
+                break;           
+            default:
+                std::cout << "\033[31m";
+                std::cout << "Option you choose does not exist!" << std::endl;
+                std::cout << "\033[0m";
+        }
+    } while (option != 0);
+}
+
+void showTicket() {
+    std::string id;
+    std::cout << "\033[33m";
+    std::cout << "Enter the ID of the ticket you want to see information: ";
+    std::cout << "\033[0m";
+    std::cin >> id;
+    try {
+    std::cout << "\033[34m";
+    Ticket ticketToShow = Ticket::getById(id);
+    std::string showtimeId = ticketToShow.getShowTimeId();
+    ShowTime showtimeToShow = ShowTime::getById(showtimeId);
+    std::string movieId = showtimeToShow.getMovieId();
+    Movie movieToShow = Movie::getbyId(movieId);
+    std::cout << std::endl << "Name movie: " << movieToShow.getName() << std::endl;
+    std::cout << "Time: " << showtimeToShow.getShowTime() << std::endl;
+    std::cout << "Date: " << showtimeToShow.getShowDate() << std::endl;
+    std::vector<std::string> seatToShow = ticketToShow.getSeatIds();
+    std::cout << "Seats: ";
+    for (auto x: seatToShow) std::cout << x << " ";
+    std::cout << std::endl << std::endl;
+    std::cout << "\033[0m";
+    } catch (const std::exception& e) {
+        std::cout << "\033[31m";
+        std::cerr << "Error showing ticket: " << e.what() << std::endl;
+        std::cout << "\033[0m";
+    }
+}
+
+std::string getCurrentDate() {
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%Y-%m-%d");
+    return oss.str();
+}
+
+void customerBook(const std::string& currentDate) {
     std::string movieId=loadMovieAvailable(currentDate);
     std::string showtimeId = loadShowtimesForMovie(movieId, currentDate);
     std::string seatInput = loadSeatForShowtime(showtimeId);
@@ -213,7 +280,7 @@ std::string loadSeatForShowtime(const std::string& showtimeId) {
                 if (std::find(selectedSeats.begin(), selectedSeats.end(), i) != selectedSeats.end()) {
                     std::cout << "\033[42m" << allSeats[i] << " \033[0m"; // Green background for selected seats
                 } else if (std::find(bookedSeats.begin(), bookedSeats.end(), allSeats[i]) != bookedSeats.end()) {
-                    std::cout << "\033[40m" << allSeats[i] << " \033[0m"; // Dark background for booked seats
+                    std::cout << "\033[41m" << allSeats[i] << " \033[0m"; // Dark background for booked seats
                 } else {
                     std::cout << allSeats[i] << " ";
                 }
@@ -223,6 +290,7 @@ std::string loadSeatForShowtime(const std::string& showtimeId) {
             }
             std::cout << "\n";
             std::cout << "\033[33m";
+            std::cout << "Red is selected!" << std::endl;
             std::cout << "Use arrow keys to navigate. Press Space to select/deselect. Press Enter when done.\n";
             std::cout << "\033[0m";
             
