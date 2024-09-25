@@ -10,6 +10,8 @@
 #include <vector>
 #include <ctime>
 #include <iomanip>
+#include <conio.h>  
+#include <windows.h> 
 
 void manageMovies();
 void manageRooms();
@@ -33,37 +35,63 @@ void addUser();
 void editUser();
 void deleteUser();
 
-void adminFunctionality() {
-    int choice;
-    do {
-        std::cout << "\033[33m";
-        std::cout << "Admin Menu:\n\n";
-        std::cout << "1. Manage Movies\n";
-        std::cout << "2. Manage Rooms\n";
-        std::cout << "3. Manage Showtimes\n";
-        std::cout << "4. Manage Tickets\n";
-        std::cout << "5. Manage Users\n";
-        std::cout << "6. Revenue\n";
-        std::cout << "0. Logout\n";
-        std::cout << "Enter your choice: ";
-        std::cout << "\033[0m";
-        std::cin >> choice;
+// Function to set cursor position
+void setCursorPosition(int x, int y) {
+    COORD coord;
+    coord.X = x;
+    coord.Y = y;
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
+}
 
-        switch (choice) {
-            case 1: manageMovies(); break;
-            case 2: manageRooms(); break;
-            case 3: manageShowtimes(); break;
-            case 4: manageTickets(); break;
-            case 5: manageUsers(); break;
-            case 6: revenue(); break;
-            case 0: {
-                 break;
-                }
-            std::cout << "\033[31m";
-            default: std::cout << "Invalid choice. Please try again.\n";
-            std::cout << "\033[0m";
+void adminFunctionality() {
+    const int NUM_OPTIONS = 7;
+    const std::string options[NUM_OPTIONS] = {
+        "Manage Movies",
+        "Manage Rooms",
+        "Manage Showtimes",
+        "Manage Tickets",
+        "Manage Users",
+        "Revenue",
+        "Logout"
+    };
+    int selectedOption = 0;
+    int key;
+
+    while (true) {
+        system("cls"); 
+
+        std::cout << "\033[33mAdmin Menu:\n\n\033[0m";
+
+        for (int i = 0; i < NUM_OPTIONS; ++i) {
+            if (i == selectedOption) {
+                std::cout << "\033[44m> " << options[i] << "\033[0m\n";
+            } else {
+                std::cout << "  " << options[i] << "\n";
+            }
         }
-    } while (choice != 0);
+
+        key = _getch();  // Get user input without pressing Enter
+
+        switch (key) {
+            case 72:  // Up arrow
+                selectedOption = (selectedOption - 1 + NUM_OPTIONS) % NUM_OPTIONS;
+                break;
+            case 80:  // Down arrow
+                selectedOption = (selectedOption + 1) % NUM_OPTIONS;
+                break;
+            case 13:  // Enter key
+                switch (selectedOption) {
+                    case 0: manageMovies(); break;
+                    case 1: manageRooms(); break;
+                    case 2: manageShowtimes(); break;
+                    case 3: manageTickets(); break;
+                    case 4: manageUsers(); break;
+                    case 5: revenue(); break;
+                    case 6: return;  // Logout
+                }
+                break;
+        }
+    }
 }
 
 void manageMovies() {
@@ -77,7 +105,6 @@ void manageMovies() {
     std::cout << "\033[0m";
     std::cout << "\033[33m";
     std::cout << "Choose an option:\n";
-    std::cout << "0. Search Movie\n";
     std::cout << "1. Add New Movie\n";
     std::cout << "2. Edit Movie\n";
     std::cout << "3. Delete Movie\n";
@@ -279,7 +306,7 @@ void manageUsers() {
     std::cout << "\033[0m";
     std::cout << "\033[33m";
     std::cout << "Choose an option:\n";
-    std::cout << "1. Edit User\n";
+    std::cout << "1. Add User\n";
     std::cout << "2. Edit User\n";
     std::cout << "3. Delete User\n";
     std::cout << "Enter your choice: ";
@@ -560,6 +587,8 @@ void addNewRoom() {
     std::cout << "\033[32m";
     std::cout << "Room added successfully!\n";
     std::cout << "\033[0m";
+    std::cin.ignore();
+    std::cin.get();
 }
 
 void editRoom() {
