@@ -1,4 +1,5 @@
 #include "../include/Room.h"
+#include "../include/ShowTime.h"
 #include "../include/FileManager.h"
 #include <sstream>
 #include <stdexcept>
@@ -34,6 +35,14 @@ void Room::remove(const std::string& id) {
         }
     }
     FileManager::writeLines("../DB/rooms.dat", newLines);
+
+    auto linesS= FileManager::readLines("../DB/showtimes.dat");
+    for (const auto& line : linesS) {
+        ShowTime s = ShowTime::fromString(line);
+        if (s.getRoomId() == id) {
+            ShowTime::remove(s.getId());
+        }
+    }
 }
 
 Room Room::getById(const std::string& id) {

@@ -1,5 +1,6 @@
 #include "../include/Movie.h"
 #include "../include/FileManager.h"
+#include "../include/ShowTime.h"
 #include <sstream>
 #include <stdexcept>
 
@@ -38,6 +39,14 @@ void Movie::remove(const std::string& id) {
         }
     }
     FileManager::writeLines("../DB/movies.dat", newLines);
+
+    auto linesS= FileManager::readLines("../DB/showtimes.dat");
+    for (const auto& line : linesS) {
+        ShowTime s = ShowTime::fromString(line);
+        if (s.getMovieId() == id) {
+            ShowTime::remove(s.getId());
+        }
+    }
 }
 
 Movie Movie::getbyId(const std::string& id) {
