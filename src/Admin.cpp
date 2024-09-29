@@ -1,4 +1,5 @@
-#include "Admin.h"
+#include "../include/Admin.h"
+#include "../include/Customer.h"
 #include "../include/Movie.h"
 #include "../include/ShowTime.h"
 #include "../include/Room.h"
@@ -13,27 +14,6 @@
 #include <conio.h>  
 #include <windows.h> 
 
-void manageMovies();
-void manageRooms();
-void manageShowtimes();
-void manageTickets();
-void manageUsers();
-void revenue();
-void searchMovie();
-void addNewMovie();
-void editMovie();
-void deleteMovie();
-void addNewRoom();
-void editRoom();
-void deleteRoom();
-void addNewShowtime();
-void editShowtime();
-void deleteShowtime();
-void editTicket();
-void deleteTicket();
-void addUser();
-void editUser();
-void deleteUser();
 static std::string getCurrentDate();
 
 void setCursorPosition(int x, int y) {
@@ -43,7 +23,10 @@ void setCursorPosition(int x, int y) {
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
-void adminFunctionality() {
+Admin::Admin(std::string id, std::string username, std::string password)
+    : User(id, username, password, UserRole::Admin) {}
+
+void Admin::displayMenu() {
     const int NUM_OPTIONS = 7;
     const std::string options[NUM_OPTIONS] = {
         "Manage Movies",
@@ -58,10 +41,8 @@ void adminFunctionality() {
     int key;
 
     while (true) {
-        system("cls"); 
-
+        system("cls");
         std::cout << "\033[33mAdmin Menu:\n\n\033[0m";
-
         for (int i = 0; i < NUM_OPTIONS; ++i) {
             if (i == selectedOption) {
                 std::cout << "\033[44m> " << options[i] << "\033[0m\n";
@@ -71,30 +52,34 @@ void adminFunctionality() {
         }
 
         key = _getch();
-
         switch (key) {
-            case 72:  
+            case 72: // Up arrow
                 selectedOption = (selectedOption - 1 + NUM_OPTIONS) % NUM_OPTIONS;
                 break;
-            case 80: 
+            case 80: // Down arrow
                 selectedOption = (selectedOption + 1) % NUM_OPTIONS;
                 break;
-            case 13:  
-                switch (selectedOption) {
-                    case 0: manageMovies(); break;
-                    case 1: manageRooms(); break;
-                    case 2: manageShowtimes(); break;
-                    case 3: manageTickets(); break;
-                    case 4: manageUsers(); break;
-                    case 5: revenue(); break;
-                    case 6: return; 
-                }
+            case 13: // Enter
+                executeOption(selectedOption);
+                if (selectedOption == NUM_OPTIONS - 1) return; // Logout
                 break;
         }
     }
 }
 
-void manageMovies() {
+void Admin::executeOption(int option) {
+    switch (option) {
+        case 0: manageMovies(); break;
+        case 1: manageRooms(); break;
+        case 2: manageShowtimes(); break;
+        case 3: manageTickets(); break;
+        case 4: manageUsers(); break;
+        case 5: revenue(); break;
+        case 6: return; // Logout
+    }
+}
+
+void Admin::manageMovies() {
     std::vector<Movie> movies = Movie::getAll();
     std::cout << "\033[34m";
     std::cout << "All Movies:\n";
@@ -127,7 +112,7 @@ void manageMovies() {
     }
 }
 
-void manageRooms() {
+void Admin::manageRooms() {
     std::vector<Room> rooms = Room::getAll();
     std::cout << "\034[0m";
     std::cout << "All Rooms:\n";
@@ -161,7 +146,7 @@ void manageRooms() {
     
 }
 
-void manageShowtimes() {
+void Admin::manageShowtimes() {
     std::vector<ShowTime> showtimes = ShowTime::getAll();
     std::cout << "\033[34m";
     std::cout << "All Showtimes:\n";
@@ -194,7 +179,7 @@ void manageShowtimes() {
     }
 }
 
-void manageTickets() {
+void Admin::manageTickets() {
     std::vector<Ticket> tickets = Ticket::getAll();
     std::cout << "\033[34m";
     std::cout << "All Tickets:\n";
@@ -233,7 +218,7 @@ void manageTickets() {
     }
 }
 
-void editTicket() {
+void Admin::editTicket() {
     std::vector<Ticket> tickets = Ticket::getAll();
     std::vector<std::string> availableTickets;
     system("cls");
@@ -377,7 +362,7 @@ void editTicket() {
     std::cin.ignore();
 }
 
-void deleteTicket() {
+void Admin::deleteTicket() {
     std::vector<Ticket> tickets = Ticket::getAll();
     std::vector<std::string> availableTickets;
     system("cls");
@@ -440,18 +425,18 @@ void deleteTicket() {
 
 }
 
-void manageUsers() {
-    std::vector<User> users = User::getAll();
+void Admin::manageUsers() {
+    std::vector<User*> users = User::getAll();
     std::cout << "\033[34m";
     std::cout << "All Users:\n";
     std::cout << "ID | Username | Password | Role\n";
     for (const auto& user : users) {
-        std::cout << user.getId() << " | " << user.getUsername() << " | " 
-                  << std::string(user.getPassword().length(), '*') << " | ";
+        std::cout << user->getId() << " | " << user->getUsername() << " | " 
+                  << std::string(user->getPassword().length(), '*') << " | ";
         
-        if (user.getRole() == UserRole::Admin) {
+        if (user->getRole() == UserRole::Admin) {
             std::cout << "Admin";
-        } else if (user.getRole() == UserRole::Normal) {
+        } else if (user->getRole() == UserRole::Normal) {
             std::cout << "Normal User";
         }
         
@@ -480,9 +465,14 @@ void manageUsers() {
         case 2: editUser(); break;
         case 3: deleteUser(); break;
     }
+
+    // Clean up allocated memory
+    for (auto user : users) {
+        delete user;
+    }
 }
 
-void addUser() {
+void Admin::addUser() {
     std::string id, username, password, role;
     std::cout << "\033[33m";
     std::cout << "Enter new ID: ";
@@ -501,19 +491,20 @@ void addUser() {
     std::cout << "\033[0m";
     std::cin >> role;
 
-    UserRole userRole;
-    if (role == "admin") {
-        userRole = UserRole::Admin;
-    } else if (role == "normal") {
-        userRole = UserRole::Normal;
-    } else {
-        std::cerr << "Invalid role. Defaulting to Normal.\n";
-        userRole = UserRole::Normal;
-    }
-
+    User* newUser = nullptr;
     try {
-        User newUser(id, username, password, userRole);
-        newUser.save(newUser);
+        if (role == "admin") {
+            newUser = new Admin(id, username, password);
+        } else if (role == "normal") {
+            newUser = new Customer(id, username, password);
+        } else {
+            std::cout << "\033[31m";
+            std::cerr << "Invalid role. Defaulting to Normal.\n";
+            std::cout << "\033[0m";
+            newUser = new Customer(id, username, password);
+        }
+
+        User::save(*newUser);
         std::cout << "\033[32m";
         std::cout << "User added successfully!\n";
         std::cout << "\033[0m";
@@ -522,16 +513,20 @@ void addUser() {
         std::cerr << "Error adding user: " << e.what() << std::endl;
         std::cout << "\033[0m";
     }
+
+    if (newUser != nullptr) {
+        delete newUser;
+    }
 }
 
-void editUser() {
-    std::vector<User> users = User::getAll();
+void Admin::editUser() {
+    std::vector<User*> users = User::getAll();
     std::vector<std::string> availableUsers;
     system("cls");
     std::string id;
 
     for (const auto& user : users) {
-        availableUsers.push_back(user.getId());
+        availableUsers.push_back(user->getId());
     }
 
     if (availableUsers.empty()) {
@@ -577,29 +572,29 @@ void editUser() {
     }
     std::cout << "\033[0m";
 
-    User userToEdit = User::getById(id);
+    User* userToEdit = User::getById(id);
 
     std::string username, password, role;
     std::cout << "\033[33m";
-    std::cout << "Current username: " << userToEdit.getUsername() << std::endl;
+    std::cout << "Current username: " << userToEdit->getUsername() << std::endl;
     std::cout << "Enter new username (press Enter to keep current): ";
     std::cout << "\033[0m";
     std::cin.ignore();
     std::getline(std::cin, username);
-    if (username.empty()) username = userToEdit.getUsername();
+    if (username.empty()) username = userToEdit->getUsername();
 
     std::cout << "\033[33m";
     std::cout << "Enter new password (press Enter to keep current): ";
     std::cout << "\033[0m";
     std::getline(std::cin, password);
-    if (password.empty()) password = userToEdit.getPassword();
+    if (password.empty()) password = userToEdit->getPassword();
 
-    std::cout << "\033[33";
-    std::cout << "Current role: " << (userToEdit.getRole() == UserRole::Admin ? "Admin" : "Normal User") << std::endl;
+    std::cout << "\033[33m";
+    std::cout << "Current role: " << (userToEdit->getRole() == UserRole::Admin ? "Admin" : "Normal User") << std::endl;
     std::cout << "Enter new role (Admin/Normal, press Enter to keep current): ";
     std::cout << "\033[0m";
     std::getline(std::cin, role);
-    UserRole newRole = userToEdit.getRole();
+    UserRole newRole = userToEdit->getRole();
     if (!role.empty()) {
         if (role == "Admin") newRole = UserRole::Admin;
         else if (role == "Normal") newRole = UserRole::Normal;
@@ -610,23 +605,39 @@ void editUser() {
         }
     }
 
-    User updatedUser(id, username, password, newRole);
-    User::update(updatedUser);
+    User* updatedUser;
+    if (newRole == UserRole::Admin) {
+        updatedUser = new Admin(id, username, password);
+    } else {
+        updatedUser = new Customer(id, username, password);
+    }
+
+    User::update(*updatedUser);
     std::cout << "\033[32m";
     std::cout << "User updated successfully!\n";
     std::cout << "\033[0m";
+
+    // Clean up
+    delete userToEdit;
+    delete updatedUser;
+
+    // Clean up the vector of users
+    for (auto user : users) {
+        delete user;
+    }
+
     std::cin.ignore();
     std::cin.get();
 }
 
-void deleteUser() {
-    std::vector<User> users = User::getAll();
+void Admin::deleteUser() {
+    std::vector<User*> users = User::getAll();
     std::vector<std::string> availableUsers;
     system("cls");
     std::string id;
 
     for (const auto& user : users) {
-        availableUsers.push_back(user.getId());
+        availableUsers.push_back(user->getId());
     }
 
     if (availableUsers.empty()) {
@@ -635,6 +646,10 @@ void deleteUser() {
         std::cout << "\033[0m";
         std::cin.ignore();
         std::cin.get();
+        // Clean up
+        for (auto user : users) {
+            delete user;
+        }
         return;
     }
 
@@ -676,11 +691,17 @@ void deleteUser() {
     std::cout << "\033[32m";
     std::cout << "User deleted successfully!\n";
     std::cout << "\033[0m";
+
+    // Clean up
+    for (auto user : users) {
+        delete user;
+    }
+
     std::cin.ignore();
     std::cin.get();
 }
 
-void revenue() {
+void Admin::revenue() {
     std::vector<Movie> movies = Movie::getAll();
     std::cout << "\033[34m";
     std::cout << "Revenue by Movie:\n";
@@ -706,7 +727,7 @@ void revenue() {
     
 }
 
-void addNewMovie() {
+void Admin::addNewMovie() {
     std::string currentDate = getCurrentDate();
     std::vector<Movie> movies = Movie::getAll();
     std::string name, duration, showStartDate, showStopDate;
@@ -766,7 +787,7 @@ void addNewMovie() {
     std::cin.get();
 }
 
-void editMovie() {
+void Admin::editMovie() {
     std::string currentDate = getCurrentDate();
     std::vector<Movie> movies = Movie::getAll();
     std::vector<std::string> availableMovies;
@@ -878,7 +899,7 @@ void editMovie() {
     std::cin.get();
 }
 
-void deleteMovie() {
+void Admin::deleteMovie() {
     std::vector<Movie> movies = Movie::getAll();
     std::vector<std::string> availableMovies;
     system("cls");
@@ -940,7 +961,7 @@ void deleteMovie() {
     std::cout << "\033[0m";
 }
 
-void addNewRoom() {
+void Admin::addNewRoom() {
     std::vector<Room> rooms = Room::getAll();
     std::string id;
     int capacity;
@@ -974,7 +995,7 @@ void addNewRoom() {
     std::cin.get();
 }
 
-void editRoom() {
+void Admin::editRoom() {
     std::vector<Room> rooms = Room::getAll();
     std::vector<std::string> availableRooms;
     system("cls");
@@ -1048,7 +1069,7 @@ void editRoom() {
     std::cin.get();
 }
 
-void deleteRoom() {
+void Admin::deleteRoom() {
     std::vector<Room> rooms = Room::getAll();
     std::vector<std::string> availableRooms;
     system("cls");
@@ -1116,7 +1137,7 @@ static std::string getCurrentDate() {
     return oss.str();
 }
 
-void addNewShowtime() {
+void Admin::addNewShowtime() {
     std::string currentDate = getCurrentDate();
     std::vector<Movie> movies = Movie::getAll();
     std::vector<ShowTime> showtimes = ShowTime::getAll();
@@ -1267,7 +1288,7 @@ void addNewShowtime() {
     std::cout << "\033[0m";
 }
 
-void editShowtime() {
+void Admin::editShowtime() {
     std::string currentDate = getCurrentDate();
     std::vector<Movie> movies = Movie::getAll();
     std::vector<ShowTime> showtimes = ShowTime::getAll();
@@ -1448,7 +1469,7 @@ void editShowtime() {
     std::cout << "\033[0m";
 }
 
-void deleteShowtime() {
+void Admin::deleteShowtime() {
     std::string currentDate = getCurrentDate();
     std::vector<Movie> movies = Movie::getAll();
     std::vector<ShowTime> showtimes = ShowTime::getAll();

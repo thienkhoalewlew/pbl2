@@ -1,9 +1,14 @@
-#ifndef CUSTOMER_H
-#define CUSTOMER_H
+#pragma once
+#include "User.h"
 
-#include <string>
-#include <vector>
+class Customer : public User {
+public:
+    Customer(std::string id, std::string username, std::string password);
 
-void customerFunctionality();
+    void displayMenu() override;
+    void executeOption(int option) override;
 
-#endif // CUSTOMER_H
+private:
+    void booking();
+    void viewTicketInformation();
+};

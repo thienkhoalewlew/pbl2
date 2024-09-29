@@ -22,7 +22,10 @@ void customerBook(const std::string& currentDate);
 std::string getCurrentDate();
 void showTicket();
 
-void customerFunctionality() {
+Customer::Customer(std::string id, std::string username, std::string password)
+    : User(id, username, password, UserRole::Normal) {}
+
+void Customer::displayMenu() {
     const int NUM_OPTIONS = 3;
     const std::string options[NUM_OPTIONS] = {
         "Booking",
@@ -33,10 +36,8 @@ void customerFunctionality() {
     int key;
 
     while (true) {
-        system("cls"); 
-
+        system("cls");
         std::cout << "\033[33mCustomer Menu:\n\n\033[0m";
-
         for (int i = 0; i < NUM_OPTIONS; ++i) {
             if (i == selectedOption) {
                 std::cout << "\033[44m> " << options[i] << "\033[0m\n";
@@ -45,27 +46,39 @@ void customerFunctionality() {
             }
         }
 
-        key = _getch(); 
-
+        key = _getch();
         switch (key) {
-            case 72:  
+            case 72: // Up arrow
                 selectedOption = (selectedOption - 1 + NUM_OPTIONS) % NUM_OPTIONS;
                 break;
-            case 80:  
+            case 80: // Down arrow
                 selectedOption = (selectedOption + 1) % NUM_OPTIONS;
                 break;
-            case 13:  
-                if (selectedOption == 0) {
-                    std::string currentDate = getCurrentDate();
-                    customerBook(currentDate);
-                } else if (selectedOption == 1) {
-                    showTicket();
-                } else if (selectedOption == 2) {
-                    return;  
-                }
+            case 13: // Enter
+                executeOption(selectedOption);
+                if (selectedOption == NUM_OPTIONS - 1) return; // Logout
                 break;
         }
     }
+}
+
+void Customer::executeOption(int option) {
+    switch (option) {
+        case 0: booking(); break;
+        case 1: viewTicketInformation(); break;
+        case 2: return; // Logout
+    }
+}
+
+void Customer::booking() {
+    // Implement booking logic here
+    std::string currentDate = getCurrentDate();
+    customerBook(currentDate);
+}
+
+void Customer::viewTicketInformation() {
+    // Implement view ticket information logic here
+    showTicket();
 }
 
 void showTicket() {

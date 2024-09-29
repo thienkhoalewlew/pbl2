@@ -1,4 +1,6 @@
 #include "../include/User.h"
+#include "../include/Admin.h"
+#include "../include/Customer.h"
 #include "../include/FileManager.h"
 #include <sstream>
 #include <stdexcept>
@@ -18,11 +20,13 @@ void User::save(const User& user) {
 void User::update(const User& user) {
     auto lines = FileManager::readLines("../DB/users.dat");
     for (auto& line : lines) {
-        User u = User::fromString(line);
-        if (u.getId() == user.getId()) {
+        User* u = User::fromString(line);
+        if (u->getId() == user.getId()) {
             line = user.toString();
+            delete u;
             break;
         }
+        delete u;
     }
     FileManager::writeLines("../DB/users.dat", lines);
 }
@@ -31,38 +35,41 @@ void User::remove(const std::string& id) {
     auto lines = FileManager::readLines("../DB/users.dat");
     auto newLines = std::vector<std::string>();
     for (const auto& line : lines) {
-        User u = User::fromString(line);
-        if (u.getId() != id) {
+        User* u = User::fromString(line);
+        if (u->getId() != id) {
             newLines.push_back(line);
         }
+        delete u;
     }
     FileManager::writeLines("../DB/users.dat", newLines);
 }
 
-User User::getById(const std::string& id) {
+User* User::getById(const std::string& id) {
     auto lines = FileManager::readLines("../DB/users.dat");
     for (const auto& line : lines) {
-        User u = User::fromString(line);
-        if (u.getId() == id) {
+        User* u = User::fromString(line);
+        if (u->getId() == id) {
             return u;
         }
+        delete u;
     }
     throw std::runtime_error("User not found");
 }
 
-User User::getByUsername(const std::string& username) {
+User* User::getByUsername(const std::string& username) {
     auto lines = FileManager::readLines("../DB/users.dat");
     for (const auto& line : lines) {
-        User u = User::fromString(line);
-        if (u.getUsername() == username) {
+        User* u = User::fromString(line);
+        if (u->getUsername() == username) {
             return u;
         }
+        delete u;
     }
     throw std::runtime_error("User not found");
 }
 
-std::vector<User> User::getAll() {
-    std::vector<User> users;
+std::vector<User*> User::getAll() {
+    std::vector<User*> users;
     auto lines = FileManager::readLines("../DB/users.dat");
     for (const auto& line : lines) {
         users.push_back(User::fromString(line));
@@ -74,7 +81,7 @@ std::string User::toString() const {
     return id + "," + username + "," + password + "," + (role == UserRole::Admin ? "admin" : "normal");
 }
 
-User User::fromString(const std::string& str) {
+User* User::fromString(const std::string& str) {
     std::istringstream iss(str);
     std::string token;
     std::vector<std::string> tokens;
@@ -83,5 +90,9 @@ User User::fromString(const std::string& str) {
     }
     if (tokens.size() != 4) throw std::runtime_error("Invalid user string");
     UserRole role = tokens[3] == "admin" ? UserRole::Admin : UserRole::Normal;
-    return User(tokens[0], tokens[1], tokens[2], role);
+    if (role == UserRole::Admin) {
+        return new Admin(tokens[0], tokens[1], tokens[2]);
+    } else {
+        return new Customer(tokens[0], tokens[1], tokens[2]);
+    }
 }

@@ -19,14 +19,18 @@ int main() {
 
     std::string role = LoginForm::login(username, password);
 
-    if (role == "Admin") {
-        adminFunctionality();
-        return 0;
-    } else if (role == "Normal User") {
-        customerFunctionality();
-
+    if (role == "admin") {
+        Admin* admin = dynamic_cast<Admin*>(User::getByUsername(username));
+        if (admin) {
+            admin->displayMenu();
+        }
+    } else if (role == "normal") {
+        Customer* customer = dynamic_cast<Customer*>(User::getByUsername(username));
+        if (customer) {
+            customer->displayMenu();
+        }
     } else {
-        std::cout << "Login failed. Please try again." << std::endl;
+        std::cout << "Invalid login credentials." << std::endl;
     }
 
     return 0;
