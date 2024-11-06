@@ -37,6 +37,7 @@ void Customer::displayMenu() {
 
     while (true) {
         system("cls");
+        std::cout << "\033[32mLogin successful! Customer Account, Welcome " << getUsername() << "!\033[0m\n";
         std::cout << "\033[33mCustomer Menu:\n\n\033[0m";
         for (int i = 0; i < NUM_OPTIONS; ++i) {
             if (i == selectedOption) {
@@ -320,7 +321,6 @@ std::string loadSeatForShowtime(const std::string& showtimeId) {
             }
             std::cout << "\n";
             std::cout << "\033[33m";
-            std::cout << "Red is selected!" << std::endl;
             std::cout << "Use arrow keys to navigate. Press Space to select/deselect. Press Enter when done.\n";
             std::cout << "\033[0m";
             
@@ -440,10 +440,14 @@ void printTicket(const std::string& movieId, const std::string& showtimeId, cons
             std::cout << "Your ticket has been successfully booked!\n";
             std::cout << "Ticket ID: " << ticketId << "\n";
             std::cout << "\033[0m"; 
+            std::cin.ignore();
+            std::cin.get();
         } else {
             std::cout << "\033[31m"; 
             std::cout << "Ticket booking cancelled.\n";
-            std::cout << "\033[0m"; 
+            std::cout << "\033[0m";
+            std::cin.ignore();
+            std::cin.get(); 
         }
     } catch (const std::exception& e) {
         std::cout << "\033[31m";

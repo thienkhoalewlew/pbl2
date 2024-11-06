@@ -42,6 +42,7 @@ void Admin::displayMenu() {
 
     while (true) {
         system("cls");
+        std::cout << "\033[32mLogin successful! Admin Account, Welcome " << getUsername() << "!\033[0m\n";
         std::cout << "\033[33mAdmin Menu:\n\n\033[0m";
         for (int i = 0; i < NUM_OPTIONS; ++i) {
             if (i == selectedOption) {
@@ -114,14 +115,14 @@ void Admin::manageMovies() {
 
 void Admin::manageRooms() {
     std::vector<Room> rooms = Room::getAll();
-    std::cout << "\034[0m";
+    std::cout << "\033[34m";
     std::cout << "All Rooms:\n";
     std::cout << "ID | Capacity \n";
     for (const auto& room : rooms) {
         std::cout << room.getId() <<  " | " << room.getCapacity() << "\n";
     }
     std::cout << "\033[0m";
-    std::cout << "\033[31m";
+    std::cout << "\033[33m";
     std::cout << "Choose an option:\n";
     std::cout << "1. Add New Room\n";
     std::cout << "2. Edit Room\n";
@@ -416,6 +417,9 @@ void Admin::addUser() {
         std::cout << "\033[32m";
         std::cout << "User added successfully!\n";
         std::cout << "\033[0m";
+        std::cin.ignore();
+        std::cin.get();
+        
     } catch (const std::exception& e) {
         std::cout << "\033[31m";
         std::cerr << "Error adding user: " << e.what() << std::endl;
@@ -762,9 +766,12 @@ void Admin::deleteMovie() {
     std::cout << "\033[0m";
 
     Movie::remove(movieId);
+    system("cls");
     std::cout << "\033[32m";
     std::cout << "Movie deleted successfully!\n";
     std::cout << "\033[0m";
+    std::cin.ignore();
+    std::cin.get();
 }
 
 void Admin::addNewRoom() {
@@ -1053,159 +1060,35 @@ void Admin::editShowtime() {
     std::vector<Movie> movies = Movie::getAll();
     std::vector<ShowTime> showtimes = ShowTime::getAll();
     std::vector<Room> rooms = Room::getAll();
-    std::vector<std::string> availableMovies;
-    std::vector<std::string> availableRooms;
-    std::vector<std::string> availableShowTimes;
-    std::string id;
-    std::string movieId, roomId, showTime, showDate;
+    std::string id, movieId, roomId, showTime, showDate;
 
-    for (const auto& showtime : showtimes) {
-        std::string movieId = showtime.getMovieId();
-        Movie movie = Movie::getbyId(movieId);
-        if (currentDate >= movie.getShowStartDate() && currentDate <= movie.getShowStopDate()) {
-            availableShowTimes.push_back(showtime.getId());
-        }
-    }
-    if (availableShowTimes.empty()) {
-        std::cout << "\033[31m";
-        std::cout << "No showtimes available for editing.\n";
-        std::cin.ignore();
-        std::cin.get();
-        std::cout << "\033[0m";
-        return;
-    }
-    int selectedOption = 0;
-    int key;
-    while (true) {
-        system("cls"); 
-
-        std::cout << "\033[33mShowtimes are available:\n\033[0m";
-
-        for (int i = 0; i < availableShowTimes.size(); ++i) {
-            if (i == selectedOption) {
-                std::cout << "\033[44m> " << availableShowTimes[i] << "\033[0m\n";
-            } else {
-                std::cout << "  " << availableShowTimes[i] << "\n";
-            }
-        }
-    
-        key = _getch();
-        int check = 0;
-
-        switch (key) {
-            case 72:  
-                selectedOption = (selectedOption - 1 + availableShowTimes.size()) % availableShowTimes.size();
-                break;
-            case 80: 
-                selectedOption = (selectedOption + 1) % availableShowTimes.size();
-                break;
-            case 13: 
-                id = availableShowTimes[selectedOption];
-                check = 1;
-                break;
-        }
-        if (check) break;
-    }
+    std::cout << "\033[33mEnter showtime ID to edit: ";
     std::cout << "\033[0m";
-
-    
-    for (const auto& movie : movies) {
-        if (currentDate >= movie.getShowStartDate() && currentDate <= movie.getShowStopDate()) {
-            availableMovies.push_back(movie.getName());
-        }
-    }
-
-    int selectedOption2 = 0;
-    int key2;
-    while (true) {
-        system("cls"); 
-
-        std::cout << "\033[33mMovies are available:\n\n\033[0m";
-
-        for (int i = 0; i < availableMovies.size(); ++i) {
-            if (i == selectedOption2) {
-                std::cout << "\033[44m> " << availableMovies[i] << "\033[0m\n";
-            } else {
-                std::cout << "  " << availableMovies[i] << "\n";
-            }
-        }
-    
-        key2 = _getch();
-        int check2 = 0;
-
-        switch (key2) {
-            case 72:  
-                selectedOption2 = (selectedOption2 - 1 + availableMovies.size()) % availableMovies.size();
-                break;
-            case 80: 
-                selectedOption2 = (selectedOption2 + 1) % availableMovies.size();
-                break;
-            case 13: 
-                for (const auto& movie : movies) {
-                    if (movie.getName() == availableMovies[selectedOption2]) {
-                        movieId = movie.getId();
-                        check2 = 1;
-                        break;
-                    }
-                } 
-                break;
-        }
-        if (check2) break;
-    }
-    std::cout << "\033[0m";
-
-    for (const auto& room : rooms) {
-            availableRooms.push_back(room.getId());
-    }
-
-    int selectedOption3 = 0;
-    int key3;
-    while (true) {
-        system("cls"); 
-
-        std::cout << "\033[33mRooms are available:\n\n\033[0m";
-
-        for (int i = 0; i < availableRooms.size(); ++i) {
-            if (i == selectedOption3) {
-                std::cout << "\033[44m> " << availableRooms[i] << "\033[0m\n";
-            } else {
-                std::cout << "  " << availableRooms[i] << "\n";
-            }
-        }
-
-        key3 = _getch();
-        int check3 = 0;
-
-        switch (key3) {
-            case 72:  
-                selectedOption3 = (selectedOption3 - 1 + availableRooms.size()) % availableRooms.size();
-                break;
-            case 80: 
-                selectedOption3 = (selectedOption3 + 1) % availableRooms.size();
-                break;
-            case 13: 
-                roomId = availableRooms[selectedOption3];
-                check3 = 1;
-                break;
-        }
-    if (check3) break;
-    }
-    std::cout << "\033[0m";
-    system("cls");
-
+    std::cin >> id;
     ShowTime showtimeToEdit = ShowTime::getById(id);
-
-    std::cout << "\033[33m";
-    std::cout << "Current show time: " << showtimeToEdit.getShowTime() << std::endl;
-    std::cout << "Enter new show time (HH:MM) (press Enter to keep current): ";
+    std::cout << "\033[33mCurrent movie ID: " << showtimeToEdit.getMovieId() << std::endl;
+    std::cout << "\033[33mEnter new movie ID (or press Enter to keep current): ";
     std::cout << "\033[0m";
     std::cin.ignore();
+    std::getline(std::cin, movieId);
+    if (movieId.empty()) movieId = showtimeToEdit.getMovieId();
+
+    std::cout << "\033[33mCurrent room ID: " << showtimeToEdit.getRoomId() << std::endl;
+    std::cout << "\033[33mEnter new room ID (or press Enter to keep current): ";
+    std::cout << "\033[0m";
+    std::getline(std::cin, roomId);
+    if (roomId.empty()) roomId = showtimeToEdit.getRoomId();
+
+    std::cout << "\033[33mCurrent show time: " << showtimeToEdit.getShowTime() << std::endl;
+    std::cout << "Enter new show time (HH:MM) (press Enter to keep current): ";
+    std::cout << "\033[0m";
     std::getline(std::cin, showTime);
     if (showTime.empty()) showTime = showtimeToEdit.getShowTime();
 
     bool validDate = false;
     while (!validDate) {
         std::cout << "\033[33m";
+        std::cout << "Current show date: " << showtimeToEdit.getShowDate() << std::endl;
         std::cout << "Enter new show date (YYYY-MM-DD) (press Enter to keep current): ";
         std::cout << "\033[0m";
         std::getline(std::cin, showDate);
@@ -1230,65 +1113,37 @@ void Admin::editShowtime() {
 }
 
 void Admin::deleteShowtime() {
-    std::string currentDate = getCurrentDate();
-    std::vector<Movie> movies = Movie::getAll();
     std::vector<ShowTime> showtimes = ShowTime::getAll();
-    std::vector<std::string> availableShowTimes;
     std::string id;
 
-    for (const auto& showtime : showtimes) {
-        std::string movieId = showtime.getMovieId();
-        Movie movie = Movie::getbyId(movieId);
-        if (currentDate >= movie.getShowStartDate() && currentDate <= movie.getShowStopDate()) {
-            availableShowTimes.push_back(showtime.getId());
-        }
-    }
-    if (availableShowTimes.empty()) {
+    if (showtimes.empty()) {
         std::cout << "\033[31m";
-        std::cout << "No showtimes available for editing.\n";
+        std::cout << "No showtimes available for deleting.\n";
+        std::cout << "\033[0m";
         std::cin.ignore();
         std::cin.get();
-        std::cout << "\033[0m";
         return;
     }
-    int selectedOption = 0;
-    int key;
-    while (true) {
-        system("cls"); 
 
-        std::cout << "\033[33mShowtimes are available:\n\n\033[0m";
-
-        for (int i = 0; i < availableShowTimes.size(); ++i) {
-            if (i == selectedOption) {
-                std::cout << "\033[44m> " << availableShowTimes[i] << "\033[0m\n";
-            } else {
-                std::cout << "  " << availableShowTimes[i] << "\n";
-            }
-        }
-    
-        key = _getch();
-        int check = 0;
-
-        switch (key) {
-            case 72:  
-                selectedOption = (selectedOption - 1 + availableShowTimes.size()) % availableShowTimes.size();
-                break;
-            case 80: 
-                selectedOption = (selectedOption + 1) % availableShowTimes.size();
-                break;
-            case 13: 
-                id = availableShowTimes[selectedOption];
-                check = 1;
-                break;
-        }
-        if (check) break;
+    std::cout << "\033[33mAll Showtimes:\n\033[0m";
+    for (const auto& showtime : showtimes) {
+        std::cout << showtime.getId() << "\n";
     }
-    std::cout << "\033[0m";
 
-    ShowTime::remove(id);
-    std::cout << "\033[32m";
-    std::cout << "Showtime deleted successfully!\n";
+    std::cout << "\033[33mEnter the ID of the showtime to delete: \033[0m";
+    std::cin >> id;
+
+    std::cout << "\033[33mAre you sure you want to delete showtime " << id << "? (y/n): \033[0m";
+    char confirmation;
+    std::cin >> confirmation;
+
+    if (confirmation == 'y' || confirmation == 'Y') {
+        ShowTime::remove(id);
+        std::cout << "\033[32mShowtime deleted successfully!\n\033[0m";
+    } else {
+        std::cout << "\033[31mDeletion cancelled.\n\033[0m";
+    }
+
     std::cin.ignore();
     std::cin.get();
-    std::cout << "\033[0m";
 }
